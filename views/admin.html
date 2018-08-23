@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="theme-color" content="#222222">
+    <title>Dashboard Admin</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="images/favicon.png" type="image/png">
+  </head>
+  <body>
+    <header>
+      <div class="logo">
+        <img height="70px" src="https://cdn.glitch.com/c8d6680f-b489-4c42-9449-52c9416ae9fa%2Fsamsung-internet-logo-text.svg?1534247440236" alt="Samsung Internet logo"/>
+      </div>
+      <div class="title-and-last-updated">
+        <h1>Developer Advocacy Dashboard Admin</h1>
+        <h3>Last updated: <span id="lastUpdated">{{lastUpdatedTime}}</span></h3>
+      </div>
+    </header>
+    <main class="admin">
+      <h2>Automatic Scraping</h2>
+      <p>
+        Hit this button to go and scrape the web for all the data that is publicly available.
+      </p>
+      <p>
+        <button id="autoUpdate">Update</button>
+      </p>
+      <h2>Manual Entry</h2>
+      <p>
+        These stats are behind logins - some with 2FA switched on, which makes it extra hard to scrape automatically.
+        Please update the numbers here inline and they will update on the dashboard straight away.
+      </p>
+      <h3>Twitter</h3>
+      <p>You can <a href="https://analytics.twitter.com">find these stats here!</a></p>
+      <div class="numbers">
+        <div>
+          <h3 id="twitterImpressions" contenteditable="true">{{twitterImpressions}}</h3>
+          <p>Tweet impressions (28 days)</p>
+        </div>
+        <div>
+          <h3 id="twitterMentions" contenteditable="true">{{twitterMentions}}</h3>
+          <p>Twitter mentions (28 days)</p>
+        </div>
+        <!--
+        <div>
+          <h3>${facebook.engagement.reach.formattedCount}</h3>
+          <p>Facebook reach</p>
+          <p class="change"><span class="arrow ${facebook.engagement.reach.changeDirection}">${facebook.engagement.reach.changeArrow}</span> ${facebook.engagement.reach.change} (${changeSinceLabel})</p>
+        </div>
+        <div>
+          <h3>${facebook.engagement.engagements.formattedCount}</h3>
+          <p>Facebook engagements (28 days)</p>
+          <p class="change"><span class="arrow ${facebook.engagement.engagements.changeDirection}">${facebook.engagement.engagements.changeArrow}</span> ${facebook.engagement.engagements.change}</p>
+        </div>
+        <div>
+          <h3>${medium.engagement.views.formattedCount}</h3>
+          <p>Medium views (30 days)</p>
+          <p class="change"><span class="arrow ${medium.engagement.views.changeDirection}">${medium.engagement.views.changeArrow}</span> ${medium.engagement.views.change}</p>
+        </div>
+        -->
+      </div>
+    </main>
+    <footer>
+      <p>&copy; 2018 Samsung Internet &middot; <a href="https://glitch.com/edit/#!/samsung-internet-dashboard">Source on Glitch</a></p>
+    </footer>
+    <script src="client-admin.js"></script>
+  </body>
+</html>

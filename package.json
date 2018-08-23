@@ -1,0 +1,29 @@
+{
+  "name": "samsung-internet-dashboard",
+  "version": "0.0.1",
+  "description": "A simple Node app with SQLite as a database management system, instantly up and running.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.16.3",
+    "sqlite3": "^4.0.0",
+    "mustache": "^2.3.1",
+    "moment": "^2.22.2",
+    "node-fetch": "^2.2.0",
+    "fast-html-parser": "^1.0.1"
+  },
+  "engines": {
+    "node": "8.x"
+  },
+  "repository": {
+    "url": "https://glitch.com/edit/#!/samsung-internet-dashboard"
+  },
+  "license": "MIT",
+  "keywords": [
+    "node",
+    "glitch",
+    "express"
+  ]
+}

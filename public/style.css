@@ -1,0 +1,208 @@
+body {
+  background: #222;
+  color: #fefefe;
+  font-family: Helvetica, Arial, sans-serif;
+  padding: 10px 15px;
+  margin: 0;
+}
+
+a {
+  color: #aaa;
+}
+
+header {
+  min-height: 90px;
+  padding: 10px;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+header > div {
+  min-height: 70px;
+}
+
+header img {
+  float: left;
+  padding: 10px 30px 10px 0;
+}
+
+header .logo {
+  flex-basis: 280px;
+}
+
+header .title-and-last-updated {
+  min-width: 300px;
+}
+
+h1 {
+  padding-top: 5px;
+  font-weight: normal;
+}
+
+h2 {
+  margin: 1.5em 0 1em 0;
+  font-weight: normal;
+  font-style: italic;
+  border-top: 1px dotted #ccc;
+  padding-top: 1em;
+}
+
+.admin h2 {
+  font-style: normal;
+}
+
+h2:first-of-type {
+  margin-top: 0;
+}
+
+h3 {
+  margin: 0.5em 0;
+  font-weight: normal;
+}
+
+.last-updated {
+  color: #aaa;
+  padding-left: 1em;
+  font-size: 0.8em;
+}
+
+main {
+  padding: 10px;
+}
+
+.hidden {
+  visibility: hidden;
+}
+
+.numbers {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 10px 0 30px 20px;
+}
+
+.numbers div {
+  text-align: center;
+  flex-basis: 120px;
+  flex-grow: 2;
+  padding: 0 10px 5px 0;
+}
+
+.admin h3 {
+  font-weight: bold;
+}
+
+.numbers h3 {
+  font-size: 2.5em;
+  margin-bottom: 0.25em;
+  font-weight: normal;
+}
+
+.summary {
+  font-style: italic;
+  margin-left: 10px;
+}
+
+.arrow {
+  font-size: 1.4em;
+  font-weight: bold;
+}
+
+.arrow.up {
+  color: #59922b;
+}
+
+.arrow.same {
+  color: #efdf57;
+}
+
+.arrow.down {
+  color: #d70206;
+}
+
+.pull-requests {
+  text-align: center;
+}
+
+.pull-requests ul {
+  text-align: left;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+[v-cloak] { 
+  display: none; 
+}
+
+footer {
+  margin-top: 1.5em;
+}
+
+footer p {
+  text-align: center;
+  color: #aaa;
+  font-size: 0.9em;
+}
+
+/* Charts */
+
+.ct-chart .ct-label {
+  color: #ffffff;
+}
+
+.ct-chart .ct-grid {
+  stroke: #555;
+}
+
+.key {
+  margin-bottom: 30px;
+}
+
+.key span {
+  margin-left: 20px;
+  font-size: 1.2em;
+  font-weight: bold;
+}
+
+#medium-chart + .key .colour1 {
+  color: #d70206;
+}
+
+#medium-chart + .key .colour2 {
+  color: #f05b4f;
+}
+
+#medium-chart + .key .colour3 {
+  color: #f4c63d;
+}
+
+.surveys {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 10px 0 30px 20px;
+}
+
+.survey {
+  text-align: center;
+  flex-basis: 250px;
+  flex-grow: 2;
+}
+
+.survey {
+  margin: 10px 0 5px 10px;
+}
+
+.survey .ct-series-a .ct-slice-pie {
+  fill: #f4c63d;
+}
+
+.survey .ct-label {
+  fill: #000;
+}
+
+.survey .key .colour1 {
+  color: #f4c63d;
+}
+
+.survey .key .colour2 {
+  color: #f05b4f;
+}
