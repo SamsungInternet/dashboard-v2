@@ -200,6 +200,13 @@ app.get('/api/getStackOverflowData', async function(request, response) {
   response.send(JSON.stringify(data));
 });
 
+app.get('/api/getLatestMediumCSVFilePath', function(request, response) {
+  const files = fs.readdirSync(__dirname + '/public/data');
+  // Presume files are in order because they should start with the date
+  let latestFilename = files[files.length - 1];
+  response.send(`data/${latestFilename}`);
+});
+
 var listener = app.listen(process.env.PORT, function() {
   console.log('Your app is listening on port ' + listener.address().port);
 });

@@ -7,7 +7,7 @@ function formatNumberValue(number, forceThousandsFormat) {
     return forceThousandsFormat || Math.abs(number) >= 1000 ? (number/1000).toFixed(1) + 'K' : number;
 }
 
-async function getMostRecentGeneralStats() {
+function getMostRecentGeneralStats() {
   return fetch('/api/getMostRecentStats')
     .then(res => res.json())
     .then(data => {
@@ -20,7 +20,7 @@ async function getMostRecentGeneralStats() {
     });
 }
 
-async function getComparisonGeneralStats() {
+function getComparisonGeneralStats() {
   return fetch('/api/getComparisonStats')
     .then(res => res.json())
     .then(data => {
@@ -35,7 +35,7 @@ async function getComparisonGeneralStats() {
 
 // Will Glitch keep hitting Github's rate limit? 
 // Maybe better to do server-side and cache it in DB? (Then we could check diff since last time too)
-async function getGithubData() {
+function getGithubData() {
   return fetch(GITHUB_API_REPOS_URL)
     .then(res => res.json())
     .then(data => {
@@ -48,11 +48,24 @@ async function getGithubData() {
     });
 }
 
-async function getStackOverflowData() {
+function getStackOverflowData() {
   return fetch('/api/getStackOverflowData')
     .then(res => res.json())
     .then(data => {
       console.log('Stack Overflow data', data);
+      return data;
+    })
+    .catch(err => {
+      console.error('Error getting Stack Overflow data', err);
+      return null;
+    });
+}
+
+function getLatestMediumCSVFilePath() {
+  return fetch('/api/getLatestMediumCSVFilePath')
+    .then(res => res.text())
+    .then(data => {
+      console.log('Latest Medium CSV file path', data);
       return data;
     })
     .catch(err => {
@@ -78,6 +91,64 @@ function calculateTotalImpressions(stats) {
     stats.devHubUniqueVisitors.mostRecent.value;
   
 }
+
+function setupMediumChart(mediumData) {
+  
+  // Date, Minutes Read, Views, Visitors
+
+  var labelCount = 0;
+  var labels = [];
+  var totalTimeReadMins = [];
+  var views = [];
+  var dailyUniqueVisitors = [];
+
+  var rows = mediumData.data.slice(1, mediumData.data.length - 1);
+
+  rows.forEach(function(row) {
+    if (row[2] !== 'null') {
+      labels.push( row[0] );
+      totalTimeReadMins.push( row[1] );
+      views.push( row[2] );
+      dailyUniqueVisitors.push( row[3] );
+    }
+  });
+
+  var data = {
+    labels: labels,
+    series: [
+      totalTimeReadMins,
+      views,
+      dailyUniqueVisitors
+    ]
+  };
+  
+  var options = {
+    labelOffset: 50,
+    height: 240,
+    axisX: {
+      showGrid: false,
+      labelInterpolationFnc: function(value) {
+        // Display one label every week
+        if (labelCount++ % 7 === 0) {
+          return moment(value).format('D/M/Y');
+        }
+      }
+    },
+    axisY: {
+        onlyInteger: true
+    },
+    seriesBarDistance: 5,
+    showPoint: false,
+    lineSmooth: false
+  };
+
+  Chartist.Line('#medium-chart', data, options);
+  labelCount = 0;
+  
+  document.getElementById('medium-chart-container').classList.remove('hidden');
+  
+}
+
 
 getMostRecentGeneralStats().then(mostRecentStats => {
   getComparisonGeneralStats().then(comparisonStats => {
@@ -192,6 +263,16 @@ getStackOverflowData().then(stackOverflowData => {
     data: data
   });
   
+});
+
+getLatestMediumCSVFilePath().then(csvFilePath => {
+  Papa.parse(csvFilePath, {
+    download: true,
+    complete: function(data) {
+        console.log('Medium data', data);
+        setupMediumChart(data);
+    }
+  });
 });
 
 Vue.component('stat-comparison', {
