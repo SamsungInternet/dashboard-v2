@@ -1,5 +1,3 @@
-console.log('hello world :o');
-
 let lastUpdatedTime = null;
 
 const parser = new DOMParser();

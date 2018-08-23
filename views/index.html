@@ -12,7 +12,7 @@
     <script defer src="lib/papaparse.js"></script>
     <script defer src="lib/moment.js"></script>
     <script defer src="lib/chartist.js"></script>
-    <script defer src="client-dashboard.js"></script>
+    <script defer src="client-index.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue"></script>
   </head>
   <body>
@@ -97,12 +97,12 @@
       </div>
       <div id="stackoverflow-data" class="numbers" v-cloak>
         <div>
-          <h3>!!stackOverflowQuestions!!</h3>
-          <p>Stack Overflow estimated questions asked (!!changeSinceLabel!!)</p>
+          <h3>{{questions}}</h3>
+          <p>Stack Overflow estimated questions asked (30 days)</p>
         </div>
         <div>
-          <h3>!!stackOverflowAnswersAndComments!!</h3>
-          <p>Stack Overflow answers/comments given (!!changeSinceLabel!!)</p>
+          <h3>{{answersAndComments}}</h3>
+          <p>Stack Overflow answers/comments given (30 days)</p>
         </div>
       </div>
       <div class="pull-requests">

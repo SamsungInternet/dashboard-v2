@@ -1,4 +1,6 @@
 dependencies:
+  assert: 1.4.1
+  dotenv: 6.0.0
   express: 4.16.3
   fast-html-parser: 1.0.1
   moment: 2.22.2
@@ -25,6 +27,12 @@ packages:
     dev: false
     resolution:
       integrity: sha1-ml9pkFGx5wczKPKgCJaLZOopVdI=
+  /assert/1.4.1:
+    dependencies:
+      util: 0.10.3
+    dev: false
+    resolution:
+      integrity: sha1-mZEtWRg2tab1s0XA8H7vwI/GXZE=
   /body-parser/1.18.2:
     dependencies:
       bytes: 3.0.0
@@ -92,6 +100,12 @@ packages:
     dev: false
     resolution:
       integrity: sha1-l4hXRCxEdJ5CBmE+N5RiBYJqvYA=
+  /dotenv/6.0.0:
+    dev: false
+    engines:
+      node: '>=6'
+    resolution:
+      integrity: sha512-FlWbnhgjtwD+uNLUGHbMykMOYQaTivdHEmYwAKFjn6GKe/CqY0fNae93ZHTd20snh9ZLr8mTzIL9m0APQ1pjQg==
   /ee-first/1.1.1:
     dev: false
     resolution:
@@ -203,6 +217,10 @@ packages:
       node: '>=0.10.0'
     resolution:
       integrity: sha512-oTZqweIP51xaGPI4uPa56/Pri/480R+mo7SeU+YETByQNhDG55ycFyNLIgta9vXhILrxXDmF7ZGhqZIcuN0gJQ==
+  /inherits/2.0.1:
+    dev: false
+    resolution:
+      integrity: sha1-sX0I0ya0Qj5Wjv9xn5GwscvfafE=
   /inherits/2.0.3:
     dev: false
     resolution:
@@ -402,6 +420,12 @@ packages:
       node: '>= 0.8'
     resolution:
       integrity: sha1-sr9O6FFKrmFltIF4KdIbLvSZBOw=
+  /util/0.10.3:
+    dependencies:
+      inherits: 2.0.1
+    dev: false
+    resolution:
+      integrity: sha1-evsa/lCAUkZInj23/g7TeTNqwPk=
   /utils-merge/1.0.1:
     dev: false
     engines:
@@ -418,6 +442,8 @@ registry: 'https://registry.npmjs.org/'
 shrinkwrapMinorVersion: 8
 shrinkwrapVersion: 3
 specifiers:
+  assert: ^1.4.1
+  dotenv: ^6.0.0
   express: ^4.16.3
   fast-html-parser: ^1.0.1
   moment: ^2.22.2

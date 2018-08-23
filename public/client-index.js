@@ -33,8 +33,8 @@ async function getComparisonGeneralStats() {
     });
 }
 
-// TODO problem is Glitch will keep hitting Github's rate limit? Better to do server-side and cache it in the DB! 
-// Then we get to check the diff since last time too...
+// Will Glitch keep hitting Github's rate limit? 
+// Maybe better to do server-side and cache it in DB? (Then we could check diff since last time too)
 async function getGithubData() {
   return fetch(GITHUB_API_REPOS_URL)
     .then(res => res.json())
@@ -43,7 +43,20 @@ async function getGithubData() {
       return data;
     })
     .catch(err => {
-      console.error('Error getting github data', err);
+      console.error('Error getting Github data', err);
+      return null;
+    });
+}
+
+async function getStackOverflowData() {
+  return fetch('/api/getStackOverflowData')
+    .then(res => res.json())
+    .then(data => {
+      console.log('Stack Overflow data', data);
+      return data;
+    })
+    .catch(err => {
+      console.error('Error getting Stack Overflow data', err);
       return null;
     });
 }
@@ -67,7 +80,6 @@ function calculateTotalImpressions(stats) {
 }
 
 getMostRecentGeneralStats().then(mostRecentStats => {
-  
   getComparisonGeneralStats().then(comparisonStats => {
     
     let data = {stats: {}},
@@ -161,6 +173,22 @@ getGithubData().then(githubData => {
   
   new Vue({
     el: '#github-data',
+    data: data
+  });
+  
+});
+
+getStackOverflowData().then(stackOverflowData => {
+  
+  const data = {
+    questions: stackOverflowData.questions.items.length,
+    answersAndComments: stackOverflowData.answers.items.length + stackOverflowData.comments.items.length
+  };
+
+  console.log('Processed StackOverflow data', data);
+  
+  new Vue({
+    el: '#stackoverflow-data',
     data: data
   });
   
