@@ -76,51 +76,12 @@ db.serialize(function(){
   });
 });
 
-// http://expressjs.com/en/starter/basic-routing.html
 app.get('/', function(request, response, next) {
-  
-  // var page = fs.readFileSync(__dirname + '/views/index.html', 'utf8');
-  
-//   db.all('SELECT * from StatsValues', function(err, rows) {
-    
-//     if (err) {
-//       next(err); // Pass errors to Express.
-//     } else {
-    
-//       const latestTimestamp = 0;
-      
-//       latestTimestamp = rows.reduce((prev, current) => {
-//          return (current.timestamp > prev.timestamp) ? current : prev;
-//       });
-      
-//       var initialData = {
-//         lastUpdatedTime: latestTimestamp
-//       };
-
-      // var initialData = {};
-  
-      // var html = mustache.to_html(page, initialData);
-      // response.send(html);
-      response.sendFile(__dirname + '/views/index.html');
-        
-    //}
-    
-  //});
+  response.sendFile(__dirname + '/views/index.html');
 });
 
 // TODO authentication!
 app.get('/admin', function(request, response) {
-  
-//   var page = fs.readFileSync(__dirname + '/views/admin.html', 'utf8');
-  
-//   var initialData = {
-//     twitterImpressions: 'testing', // TEMP just for testing
-//     twitterMentions: 'testing 2'   // TEMP just for testing
-//   };
-  
-//   var html = mustache.to_html(page, initialData);
-//   response.send(html);
-  
   response.sendFile(__dirname + '/views/admin.html');
 });
 
@@ -130,24 +91,10 @@ async function scrapeTwitterFollowerCount() {
     .then(res => res.text())
     .then(body => {
     
-      console.log('body', body.substring(0, 20) + '...');
-    
       const doc = htmlParser.parse(body);
-    
-      console.log('doc', doc);
-          
       const followersNav = doc.querySelector('.ProfileNav-item--followers');
-    
-      console.log('followersNav', followersNav);
-    
       const followersValue = followersNav.querySelector('.ProfileNav-value');
-    
-      console.log('followersValue', followersValue);
-    
       const followerCount = followersValue.childNodes[0].rawText;
-      
-      console.log('Follower count', followerCount);
-
       return followerCount;
 
     })
@@ -160,23 +107,21 @@ async function scrapeTwitterFollowerCount() {
 // TODO authentication!
 app.post('/admin/autoupdate', async function(request, response) {
   
-  // OK as a test for now, let's just try to get our Twitter follower count.
+  // TEMP - OK as a test for now, let's just try to get our Twitter follower count.
   const twitterFollowerCount = await scrapeTwitterFollowerCount();
-  
   console.log('twitterFollowerCount', twitterFollowerCount);
-  
   response.send({twitterFollowerCount: twitterFollowerCount});
   
 });
 
-// endpoint to get all the stats in the database
+// JSON API endpoint to get all the stats in the database
 app.get('/api/getAllStats', function(request, response) {
   db.all('SELECT * from StatsValues', function(err, rows) {
     response.send(JSON.stringify(rows));
   });
 });
 
-// endpoint to get most recent stats in the database
+// JSON API endpoint to get most recent stats in the database
 app.get('/api/getMostRecentStats', function(request, response) {
   db.all(`SELECT * from StatsValues sv1 WHERE
     timestamp = (SELECT MAX(timestamp) FROM StatsValues sv2 WHERE sv1.key = sv2.key)`, function(err, rows) {
@@ -184,7 +129,7 @@ app.get('/api/getMostRecentStats', function(request, response) {
   });
 });
 
-// endpoint to get 2nd most recent stats in the database for comparison
+// JSON API endpoint to get 2nd most recent stats in the database for comparison
 app.get('/api/getComparisonStats', function(request, response) {
   db.all(`SELECT * from StatsValues sv1 WHERE
     timestamp = (SELECT MAX(timestamp) 
@@ -194,7 +139,6 @@ app.get('/api/getComparisonStats', function(request, response) {
   });
 });
 
-// listen for requests :)
 var listener = app.listen(process.env.PORT, function() {
   console.log('Your app is listening on port ' + listener.address().port);
 });
