@@ -439,7 +439,7 @@ packages:
     resolution:
       integrity: sha1-IpnwLG3tMNSllhsLn3RSShj2NPw=
 registry: 'https://registry.npmjs.org/'
-shrinkwrapMinorVersion: 8
+shrinkwrapMinorVersion: 9
 shrinkwrapVersion: 3
 specifiers:
   assert: ^1.4.1

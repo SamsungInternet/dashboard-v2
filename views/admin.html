@@ -8,6 +8,11 @@
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="style.css">
     <link rel="icon" href="images/favicon.png" type="image/png">
+    <script defer src="lib/moment.js"></script>
+    <script defer src="client-util.js"></script>
+    <script defer src="client-admin.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.10/lodash.min.js"></script>
   </head>
   <body>
     <header>
@@ -16,7 +21,6 @@
       </div>
       <div class="title-and-last-updated">
         <h1>Developer Advocacy Dashboard Admin</h1>
-        <h3>Last updated: <span id="lastUpdated">{{lastUpdatedTime}}</span></h3>
       </div>
     </header>
     <main class="admin">
@@ -24,47 +28,43 @@
       <p>
         Hit this button to go and scrape the web for all the data that is publicly available.
       </p>
-      <p>
-        <button id="autoUpdate">Update</button>
-      </p>
+      <div v-cloak id="automatic-stats">
+        <p>
+          <button v-if="updating" class="auto-update" disabled="true">Updating</button>
+          <button v-else class="auto-update" v-on:click.prevent="onClickUpdate">Update</button>
+        </p>
+        <p v-if="updates.length">Updated, saving new values:</p>
+        <ul>
+          <li v-for="update in updates">
+            <strong>{{ update.key }}:</strong> {{update.value}}
+          </li>
+        </ul>
+      </div>
       <h2>Manual Entry</h2>
       <p>
         These stats are behind logins - some with 2FA switched on, which makes it extra hard to scrape automatically.
-        Please update the numbers here inline and they will update on the dashboard straight away.
+        Please update the numbers here inline and they will update on the dashboard.
       </p>
-      <h3>Twitter</h3>
-      <p>You can <a href="https://analytics.twitter.com">find these stats here!</a></p>
-      <div class="numbers">
-        <div>
-          <h3 id="twitterImpressions" contenteditable="true">{{twitterImpressions}}</h3>
-          <p>Tweet impressions (28 days)</p>
+      <div v-cloak id="manual-stats">
+        <p><em>Last updated: <span id="lastUpdated">{{lastUpdatedTime}}</span></em></p>
+        <div class="numbers">
+          <div>
+            <input type="number" v-on:keyup="onKeyUp" v-model.number="stats.mediumViews.mostRecent.value" id="mediumViews">
+            <p>Medium views (30 days) (<a href="https://medium.com/samsung-internet-dev/stats/overview">find here</a>)</p>
+          </div>
+          <div>
+            <input type="number" v-on:keyup="onKeyUp" v-model.number="stats.twitterImpressions.mostRecent.value" id="twitterImpressions">
+            <p>Tweet impressions (28 days) (<a href="https://analytics.twitter.com">find here</a>)</p>
+          </div>
+          <div>
+            <input type="number" v-on:keyup="onKeyUp" v-model.number="stats.twitterMentions.mostRecent.value" id="twitterMentions">
+            <p>Twitter mentions (28 days) (<a href="https://analytics.twitter.com">find here</a>)</p>
+          </div>
         </div>
-        <div>
-          <h3 id="twitterMentions" contenteditable="true">{{twitterMentions}}</h3>
-          <p>Twitter mentions (28 days)</p>
-        </div>
-        <!--
-        <div>
-          <h3>${facebook.engagement.reach.formattedCount}</h3>
-          <p>Facebook reach</p>
-          <p class="change"><span class="arrow ${facebook.engagement.reach.changeDirection}">${facebook.engagement.reach.changeArrow}</span> ${facebook.engagement.reach.change} (${changeSinceLabel})</p>
-        </div>
-        <div>
-          <h3>${facebook.engagement.engagements.formattedCount}</h3>
-          <p>Facebook engagements (28 days)</p>
-          <p class="change"><span class="arrow ${facebook.engagement.engagements.changeDirection}">${facebook.engagement.engagements.changeArrow}</span> ${facebook.engagement.engagements.change}</p>
-        </div>
-        <div>
-          <h3>${medium.engagement.views.formattedCount}</h3>
-          <p>Medium views (30 days)</p>
-          <p class="change"><span class="arrow ${medium.engagement.views.changeDirection}">${medium.engagement.views.changeArrow}</span> ${medium.engagement.views.change}</p>
-        </div>
-        -->
       </div>
     </main>
     <footer>
       <p>&copy; 2018 Samsung Internet &middot; <a href="https://glitch.com/edit/#!/samsung-internet-dashboard">Source on Glitch</a></p>
     </footer>
-    <script src="client-admin.js"></script>
   </body>
 </html>

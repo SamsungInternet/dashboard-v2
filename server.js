@@ -9,10 +9,11 @@ const htmlParser = require('fast-html-parser');
 const app = express();
 
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 app.use(express.static('public'));
 
 // init sqlite db
-const DROP_DB = false; // switch to true when DB needs to be recreated during dev
+const RECREATE_DB = false; // switch to true when DB needs to be recreated during dev
 const dbFile = './.data/sqlite.db';
 const moment = require('moment');
 const sqlite3 = require('sqlite3').verbose();
@@ -35,48 +36,35 @@ const STACK_OVERFLOW_COMMENTS_URL = `https://api.stackexchange.com/2.2/users/${S
 
 // if ./.data/sqlite.db does not exist, create it, otherwise print records to console
 db.serialize(function(){
-  if (!fs.existsSync(dbFile) || DROP_DB) {
+  if (!fs.existsSync(dbFile) || RECREATE_DB) {
     console.log('Dropping and recreating StatsValues table');
     db.run('DROP TABLE IF EXISTS StatsValues');
     db.run(`CREATE TABLE StatsValues (
              timestamp INTEGER,
              key TEXT,
-             value REAL,
-             PRIMARY KEY (timestamp, key))`);
+             value REAL)`);
     console.log('New table StatsValues created!');
     
     // insert initial values (from old dashboard data)
     db.serialize(function() {
       db.run(`INSERT INTO StatsValues (timestamp, key, value) VALUES 
-               ('2018-07-24 00:00:00', 'mediumFollowers', 3000),
-               ('2018-07-24 00:00:00', 'twitterFollowers', 1632),
-               ('2018-07-24 00:00:00', 'facebookFollowers', 425),
-               ('2018-07-24 00:00:00', 'instagramFollowers', 71),
-               ('2018-07-24 00:00:00', 'devHubUniqueVisitors', 15564),
-               ('2018-07-24 00:00:00', 'twitterImpressions', 93500),
-               ('2018-07-24 00:00:00', 'twitterMentions', 116),
-               ('2018-07-24 00:00:00', 'facebookViews', 114),
-               ('2018-07-24 00:00:00', 'mediumViews', 45210),
+               ('2018-08-20 00:00:00', 'devHubUniqueVisitors', 14206),
+               ('2018-08-28 00:00:00', 'mediumFollowers', 3100),
+               ('2018-08-28 00:00:00', 'mediumViews', 36216),
+               ('2018-08-28 00:00:00', 'twitterFollowers', 1692),
+               ('2018-08-28 00:00:00', 'twitterImpressions', 27300),
+               ('2018-08-28 00:00:00', 'twitterMentions', 57),
+               ('2018-08-28 00:00:00', 'facebookFollowers', 445),
+               ('2018-08-28 00:00:00', 'instagramFollowers', 75),
 
-               ('2018-08-07 00:00:00', 'mediumFollowers', 3100),
-               ('2018-08-07 00:00:00', 'twitterFollowers', 1653),
-               ('2018-08-07 00:00:00', 'facebookFollowers', 425),
-               ('2018-08-07 00:00:00', 'instagramFollowers', 75),
-               ('2018-08-07 00:00:00', 'devHubUniqueVisitors', 17210),
-               ('2018-08-07 00:00:00', 'twitterImpressions', 62700),
-               ('2018-08-07 00:00:00', 'twitterMentions', 100),
-               ('2018-08-07 00:00:00', 'facebookViews', 63),
-               ('2018-08-07 00:00:00', 'mediumViews', 41750),
-
-               ('2018-08-20 00:00:00', 'mediumFollowers', 3100),
-               ('2018-08-20 00:00:00', 'twitterFollowers', 1700),
-               ('2018-08-20 00:00:00', 'facebookFollowers', 440),
-               ('2018-08-20 00:00:00', 'instagramFollowers', 73),
-               ('2018-08-20 00:00:00', 'devHubUniqueVisitors', 15400),
-               ('2018-08-20 00:00:00', 'twitterImpressions', 25800),
-               ('2018-08-20 00:00:00', 'twitterMentions', 61),
-               ('2018-08-20 00:00:00', 'facebookViews', 114),
-               ('2018-08-20 00:00:00', 'mediumViews', 36200);`);
+               ('2018-09-04 00:00:00', 'devHubUniqueVisitors', 13316),
+               ('2018-09-04 00:00:00', 'mediumFollowers', 3100),
+               ('2018-09-04 00:00:00', 'mediumViews', 37558),
+               ('2018-09-04 00:00:00', 'twitterFollowers', 1701),
+               ('2018-09-04 00:00:00', 'twitterImpressions', 37000),
+               ('2018-09-04 00:00:00', 'twitterMentions', 80),
+               ('2018-09-04 00:00:00', 'facebookFollowers', 443),
+               ('2018-09-04 00:00:00', 'instagramFollowers', 77);`);
     });
   }
   else {
@@ -97,13 +85,43 @@ async function scrapeTwitterFollowerCount() {
     
       const doc = htmlParser.parse(body);
       const followersNav = doc.querySelector('.ProfileNav-item--followers');
-      const followersValue = followersNav.querySelector('.ProfileNav-value');
-      const followerCount = followersValue.childNodes[0].rawText;
-      return followerCount;
+      const followersElement = followersNav.querySelector('.ProfileNav-value');
+      let followerCount = followersElement.childNodes[0].rawText;
+      followerCount = followerCount.replace(',', '');
+      return parseInt(followerCount, 10);
 
     })
     .catch(err => {
       console.error('Error scraping Twitter follower count', err);
+    });
+  
+}
+
+async function scrapeMediumFollowerCount() {
+ 
+  return fetch('https://medium.com/samsung-internet-dev/latest')
+    .then(res => res.text())
+    .then(body => {
+    
+      const doc = htmlParser.parse(body);
+      const followersNav = doc.querySelector('.js-aboutCollectionBox');
+      const followersElement = followersNav.querySelectorAll('.u-fontSize14')[1];
+      const followerText = followersElement.rawText;
+    
+      let followerCount = followerText.replace('Followers', '');
+    
+      // To handle e.g. "3K" and "3.1K"
+      if (followerCount.includes('.')) {
+          followerCount = followerCount.replace('K', '00').replace('.', '');
+      } else {
+          followerCount = followerCount.replace('K', '000');
+      }
+        
+      return parseFloat(followerCount, 10);
+
+    })
+    .catch(err => {
+      console.error('Error scraping Medium follower count', err);
     });
   
 }
@@ -147,13 +165,62 @@ async function fetchStackOverflowCommentStats() {
 
 }
 
+async function updateStat(statKey, statValue) {
+
+  db.serialize(function() {
+
+    const insertStmt = db.prepare('INSERT INTO StatsValues (timestamp, key, value) VALUES (datetime(\'now\'), ?, ?)');
+    insertStmt.run(statKey, statValue);
+    
+    /**
+     * Now delete any other values for this stat within the same day.
+     * Because comparisons with less than 1 day ago don't make sense.
+     * And this allows admins to override mistakes without them
+     * being kept around to show the difference.
+     */
+    const deleteStmt = db.prepare(`DELETE from StatsValues WHERE key = ?
+      AND timestamp > date('now','-1 day')
+      AND timestamp NOT IN (SELECT MAX(timestamp) FROM StatsValues sv2 WHERE key = sv2.key)`);
+
+    deleteStmt.run(statKey, function(err, rows) {
+      if (err) {
+        console.error('Error deleting stats values from same day', err);
+      }
+      return !err;
+    });
+    
+  });
+  
+}
+
+
 // TODO authentication!
 app.post('/admin/autoupdate', async function(request, response) {
   
-  // TEMP - OK as a test for now, let's just try to get our Twitter follower count.
-  const twitterFollowerCount = await scrapeTwitterFollowerCount();
-  console.log('twitterFollowerCount', twitterFollowerCount);
-  response.send({twitterFollowerCount: twitterFollowerCount});
+  let stats = {};
+  
+  stats.twitterFollowerCount = await scrapeTwitterFollowerCount();
+  stats.mediumFollowerCount = await scrapeMediumFollowerCount();
+  
+  for (const statKey in stats) {
+  
+    const statValue = stats[statKey];
+    
+    if (statValue !== null && !isNaN(statValue)) {
+      updateStat(statKey, statValue);
+    } else {
+      console.error(`Unparseable value for ${statKey}:`, statValue);
+    }
+    
+  }
+  
+  const updatesMap = Object.keys(stats).map((key) => {
+    return {key: key, value: stats[key]};
+  });
+  
+  console.log('Updates map', updatesMap);
+  
+  response.send(updatesMap);
   
 });
 
@@ -209,4 +276,29 @@ app.get('/api/getLatestMediumCSVFilePath', function(request, response) {
 
 var listener = app.listen(process.env.PORT, function() {
   console.log('Your app is listening on port ' + listener.address().port);
+});
+
+// TODO auth!
+app.post('/api/updateStat', function(request, response) {
+  
+  const statKey = request.body.key,
+        statValue = request.body.value,
+        errorResponse = JSON.stringify({success: false});
+  
+  if (!statKey || !statValue) {
+    response.send(errorResponse);
+    return;
+  }
+  
+  const parsed = parseInt(statValue, 10);
+  if (isNaN(parsed)) {
+    response.send(errorResponse);
+    return;
+  }
+  
+  console.log('Update this stat', statKey, statValue);
+  
+  const success = updateStat(statKey, statValue);
+  
+  response.send(JSON.stringify({success: success}));
 });
