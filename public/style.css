@@ -17,6 +17,15 @@ header {
   flex-wrap: wrap;
 }
 
+header .logout {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  color: #fff;
+  text-decoration: none;
+  font-size: 0.9em;
+}
+
 header > div {
   min-height: 70px;
 }
@@ -74,12 +83,17 @@ main {
   visibility: hidden;
 }
 
+button,
+input[type=submit] {
+  border-radius: 5px;
+  padding: 5px;
+  border: none;
+  cursor: pointer;
+}
+
 button.auto-update {
   font-size: 1.3em;
   padding: 8px;
-  border-radius: 5px;
-  border: none;
-  cursor: pointer;
 }
 
 .numbers {
@@ -231,4 +245,44 @@ footer p {
 
 .survey .key .colour2 {
   color: #f05b4f;
+}
+
+.login {
+  display: block;
+  margin: 0 auto;
+  width: 320px;
+}
+
+.login .error {
+  display: none;
+  color: #ff6666;
+  font-size: 1.3em;
+  margin-bottom: 15px;
+}
+
+.login label {
+  display: block;
+  margin: 5px 0;
+  font-size: 1.2em;
+}
+
+.login input {
+  display: block;
+  width: 300px;
+  max-width: 100%;
+  margin: 5px 0 15px;
+  border-radius: 5px;
+  border: none;
+  padding: 5px;
+  box-sizing: border-box;
+  font-size: 1.2em;
+}
+
+.login input[type=submit] {
+  padding: 5px;
+  border-radius: 5px;
+  border: none;
+  background: #ccc;
+  margin-top: 30px;
+  font-size: 1.3em;
 }

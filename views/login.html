@@ -20,7 +20,10 @@
       </div>
     </header>
     <main class="admin">
-      <form method="POST" action="/login">
+      <form method="POST" action="/login" class="login">
+        <div class="error">
+          Invalid login. Please try again.
+        </div>
         <label for="username">Username</label>
         <input id="username" name="username" type="text">
         <label for="password">Password</label>
