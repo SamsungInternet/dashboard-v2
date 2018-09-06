@@ -62,7 +62,7 @@ new Vue({
       this.updating = true;
 
       // NB. The scraping needs to be done server-side due to cross-origin restrictions client-side.
-      fetch('/admin/autoupdate', {method: 'POST'})
+      fetch('/admin/autoUpdate', {method: 'POST'})
         .then(res => res.json())
         .then(result => {
 
