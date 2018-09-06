@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="theme-color" content="#222222">
+    <title>Dashboard Admin Login</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="images/favicon.png" type="image/png">
+    <script defer src="client-login.js"></script>
+  </head>
+  <body>
+    <header>
+      <div class="logo">
+        <img height="70px" src="https://cdn.glitch.com/c8d6680f-b489-4c42-9449-52c9416ae9fa%2Fsamsung-internet-logo-text.svg?1534247440236" alt="Samsung Internet logo"/>
+      </div>
+      <div class="title-and-last-updated">
+        <h1>Developer Advocacy Dashboard Admin</h1>
+      </div>
+    </header>
+    <main class="admin">
+      <form method="POST" action="/login">
+        <label for="username">Username</label>
+        <input id="username" name="username" type="text">
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password">
+        <input type="submit">
+      </form>
+    </main>
+    <footer>
+      <p>&copy; 2018 Samsung Internet &middot; <a href="https://glitch.com/edit/#!/samsung-internet-dashboard">Source on Glitch</a></p>
+    </footer>
+  </body>
+</html>

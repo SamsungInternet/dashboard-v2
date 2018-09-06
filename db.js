@@ -53,61 +53,74 @@ export function init() {
   
 }
 
-export async function getAllStats() {
-  db.all('SELECT * from StatsValues', function(err, rows) {
-    if (err) {
-      console.error('Error getting all stats', err);
-    }
-    return rows;
+export function getAllStats() {
+  return new Promise(function(resolve, reject) {
+    db.all('SELECT * from StatsValues', function(err, rows) {
+      if (err) {
+        console.error('Error getting all stats', err);
+        reject(err);
+      }
+      resolve(rows);
+    });
   });
 }
 
-export async function getMostRecentStats() {
-  db.all(`SELECT * from StatsValues sv1 WHERE
-    timestamp = (SELECT MAX(timestamp) FROM StatsValues sv2 WHERE sv1.key = sv2.key)`, function(err, rows) {
-    if (err) {
-      console.error('Error getting most recent stats', err);
-    }
-    return rows;
+export function getMostRecentStats() {
+  return new Promise(function(resolve, reject) {
+    db.all(`SELECT * from StatsValues sv1 WHERE
+      timestamp = (SELECT MAX(timestamp) FROM StatsValues sv2 WHERE sv1.key = sv2.key)`, function(err, rows) {
+      if (err) {
+        console.error('Error getting most recent stats', err);
+        reject(err);
+      }
+      resolve(rows);
+    });
   });
 }   
 
-export async function getComparisonStats() {
-  db.all(`SELECT * from StatsValues sv1 WHERE
-    timestamp = (SELECT MAX(timestamp) 
-    FROM StatsValues sv2 WHERE sv1.key = sv2.key 
-    AND timestamp NOT IN (SELECT MAX(timestamp) FROM StatsValues sv3 WHERE sv1.key = sv3.key))`, function(err, rows) {
-    if (err) {
-      console.error('Error getting most recent stats', err);
-    }
-    return rows;
+export function getComparisonStats() {
+  return new Promise(function(resolve, reject) {
+    db.all(`SELECT * from StatsValues sv1 WHERE
+      timestamp = (SELECT MAX(timestamp) 
+      FROM StatsValues sv2 WHERE sv1.key = sv2.key 
+      AND timestamp NOT IN (SELECT MAX(timestamp) FROM StatsValues sv3 WHERE sv1.key = sv3.key))`, function(err, rows) {
+      if (err) {
+        console.error('Error getting most recent stats', err);
+        reject(err);
+      }
+      resolve(rows);
+    });
   });
 }
 
-export async function updateStat(statKey, statValue) {
+export function updateStat(statKey, statValue) {
 
-  db.serialize(function() {
+  return new Promise(function(resolve, reject) {
+    db.serialize(function() {
 
-    const insertStmt = db.prepare('INSERT INTO StatsValues (timestamp, key, value) VALUES (datetime(\'now\'), ?, ?)');
-    insertStmt.run(statKey, statValue);
-    
-    /**
-     * Now delete any other values for this stat within the same day.
-     * Because comparisons with less than 1 day ago don't make sense.
-     * And this allows admins to override mistakes without them
-     * being kept around to show the difference.
-     */
-    const deleteStmt = db.prepare(`DELETE from StatsValues WHERE key = ?
-      AND timestamp > date('now','-1 day')
-      AND timestamp NOT IN (SELECT MAX(timestamp) FROM StatsValues sv2 WHERE key = sv2.key)`);
+      const insertStmt = db.prepare('INSERT INTO StatsValues (timestamp, key, value) VALUES (datetime(\'now\'), ?, ?)');
+      insertStmt.run(statKey, statValue);
 
-    deleteStmt.run(statKey, function(err, rows) {
-      if (err) {
-        console.error('Error deleting stats values from same day', err);
-      }
-      return !err;
+      /**
+       * Now delete any other values for this stat within the same day.
+       * Because comparisons with less than 1 day ago don't make sense.
+       * And this allows admins to override mistakes without them
+       * being kept around to show the difference.
+       */
+      const deleteStmt = db.prepare(`DELETE from StatsValues WHERE key = ?
+        AND timestamp > date('now','-1 day')
+        AND timestamp NOT IN (SELECT MAX(timestamp) FROM StatsValues sv2 WHERE key = sv2.key)`);
+
+      deleteStmt.run(statKey, function(err, rows) {
+        if (err) {
+          console.error('Error deleting stats values from same day', err);
+          reject(err);
+        } else {
+          resolve(true);
+        }
+      });
+
     });
-    
   });
   
 }

@@ -1,11 +1,10 @@
 import assert from 'assert';
-import basicAuth from 'express-basic-auth';
 import bodyParser from 'body-parser';
-import dotenv from 'dotenv';
+import cookieParser from 'cookie-parser';
+import session from 'express-session';
 import express from 'express';
-import fetch from 'node-fetch';
 import fs from 'fs';
-import htmlParser from 'fast-html-parser';
+import moment from 'moment';
 import mustache from 'mustache';
 
 import * as db from './db.js';
@@ -15,58 +14,94 @@ import {scrapeTwitterFollowerCount,
 
 import {fetchStackOverflowQuestionStats, 
         fetchStackOverflowAnswerStats, 
-        fetchStackOverflowCommentStats} from './fetcher.js';
+        fetchStackOverflowCommentStats} from './stackOverflow.js';
 
+assert(process.env.ADMIN_PWD, 'missing ADMIN_PWD in env');
+assert(process.env.COOKIE_SECRET, 'missing COOKIE_SECRET in env');
+assert(process.env.STACK_OVERFLOW_API_KEY, 'missing STACK_OVERFLOW_API_KEY in env');
+
+db.init();
+
+const ADMIN_USER = 'admin';
 const app = express();
 
+app.set('trust proxy', 1);
+app.use(cookieParser());
+app.use(session({
+  secret: process.env.COOKIE_SECRET,
+  cookie: {secure: true},
+  saveUninitialized: true,
+  resave: true
+}));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(express.static('public'));
 
-const moment = require('moment');
-
-// Load local environment variables from .env
-//dotenv.load({silent: true});
-
-// assert(process.env.STACK_OVERFLOW_API_KEY, 'missing STACK_OVERFLOW_API_KEY in env');
-// assert(process.env.ADMIN_PWD, 'missing ADMIN_PWD in env');
-
-console.log('env vars are undefined! why? :-/', process.env.STACK_OVERFLOW_API_KEY);
-
-let fromDate = new Date();
-fromDate.setMonth(fromDate.getMonth() - 1);
-
-const STACK_OVERFLOW_FROM_DATE_SECS = Math.floor(fromDate.getTime() / 1000);
-const STACK_OVERFLOW_KEY = process.env.STACK_OVERFLOW_API_KEY;
-const STACK_OVERFLOW_USER_IDS = [396246,4007679,2144525];
-const STACK_OVERFLOW_QUESTIONS_URL = `https://api.stackexchange.com/2.2/search/advanced?site=stackoverflow&order=desc&sort=creation&key=${STACK_OVERFLOW_KEY}&q=samsung%20internet&fromdate=${STACK_OVERFLOW_FROM_DATE_SECS}`;
-const STACK_OVERFLOW_ANSWERS_URL = `https://api.stackexchange.com/2.2/users/${STACK_OVERFLOW_USER_IDS.join(';')}/answers?site=stackoverflow&order=desc&sort=activity&key=${STACK_OVERFLOW_KEY}&fromdate=${STACK_OVERFLOW_FROM_DATE_SECS}`;
-const STACK_OVERFLOW_COMMENTS_URL = `https://api.stackexchange.com/2.2/users/${STACK_OVERFLOW_USER_IDS.join(';')}/comments?site=stackoverflow&order=desc&key=${STACK_OVERFLOW_KEY}&fromdate=${STACK_OVERFLOW_FROM_DATE_SECS}`;
-
-db.init();
-
-const adminAuth = basicAuth({
-    users: {
-        'admin': process.env.ADMIN_PWD
-    },
-    challenge: false
+app.use(function printSession(req, res, next) {
+  console.log('req.session', req.session);
+  return next();
 });
 
-const adminChallengeAuth = basicAuth({
-    users: {
-        'admin': process.env.ADMIN_PWD
-    },
-    challenge: true
-});
+const adminAuth = (request, response, next) => {
+  console.log('Checking request.session.user', request.session.user);
+  if (request.session && request.session.user === ADMIN_USER ) {
+    return next();
+  } else {
+    return response.redirect('/login');
+  }
+};
+
+const adminApiAuth = (request, response, next) => {
+  if (request.session && request.session.user === ADMIN_USER ) {
+    return next();
+  } else {
+    const err = new Error('You must be logged in.');
+    err.status = 401;
+    return next(err);
+  }
+};
 
 // Homepage (dashboard)
-app.get('/', function(request, response, next) {
+app.get('/', (request, response, next) => {
   response.sendFile(__dirname + '/views/index.html');
 });
 
 // Admin controls
-app.get('/admin', adminChallengeAuth, function(request, response) {
+app.get('/admin', adminAuth, (request, response) => {
   response.sendFile(__dirname + '/views/admin.html');
+});
+
+app.get('/login', (request, response) => {
+  response.sendFile(__dirname + '/views/login.html');
+});
+
+app.post('/login', (request, response) => {
+  
+  console.log('username', request.body.username);
+  console.log('pwd', request.body.password);
+  
+  if (request.body.username === ADMIN_USER &&
+      request.body.password === process.env.ADMIN_PWD) {
+    request.session.user = ADMIN_USER;
+    console.log('Set request.session.user', request.session.user);
+    response.redirect('/admin');
+  } else {
+    response.redirect('/login?error=invalid');
+  }
+});
+
+app.get('/logout', function(request, response, next) {
+  if (request.session) {
+    request.session.destroy(err => {
+      if (err) {
+        return next(err);
+      } else {
+        return response.redirect('/');
+      }
+    });
+  } else {
+    return response.redirect('/');
+  }
 });
 
 // JSON API endpoint to get all the stats in the database
@@ -77,14 +112,16 @@ app.get('/api/getAllStats', async function(request, response) {
 
 // JSON API endpoint to get most recent stats in the database
 app.get('/api/getMostRecentStats', async function(request, response) {
+  console.log('1');
   const rows = await db.getMostRecentStats();
+  console.log('2', rows);
   response.send(JSON.stringify(rows));
 });
 
 // JSON API endpoint to get 2nd most recent stats in the database for comparison
 app.get('/api/getComparisonStats', async function(request, response) {
   const rows = await db.getComparisonStats();
-  
+  response.send(JSON.stringify(rows));
 });
 
 app.get('/api/getStackOverflowData', async function(request, response) {
@@ -103,7 +140,7 @@ app.get('/api/getLatestMediumCSVFilePath', function(request, response) {
 });
 
 // Manual statistic update
-app.post('/api/updateStat', adminAuth, function(request, response) {
+app.post('/api/admin/updateStat', adminApiAuth, async function(request, response) {
   
   const statKey = request.body.key,
         statValue = request.body.value,
@@ -122,13 +159,13 @@ app.post('/api/updateStat', adminAuth, function(request, response) {
   
   console.log('Update this stat', statKey, statValue);
   
-  const success = db.updateStat(statKey, statValue);
+  const success = await db.updateStat(statKey, statValue);
   
   response.send(JSON.stringify({success: success}));
 });
 
 // Automatic scrape and update
-app.post('/admin/autoUpdate', adminAuth, async function(request, response) {
+app.post('/api/admin/autoUpdate', adminApiAuth, async function(request, response) {
   
   let stats = {};
   

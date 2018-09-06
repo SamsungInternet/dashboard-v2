@@ -1,3 +1,6 @@
+import fetch from 'node-fetch';
+import htmlParser from 'fast-html-parser';
+
 export async function scrapeTwitterFollowerCount() {
  
   return fetch('https://twitter.com/samsunginternet')
