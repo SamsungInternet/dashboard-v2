@@ -38,9 +38,9 @@ getMostRecentGeneralStats().then(mostRecentStats => {
     methods: {
       onKeyUp: _.debounce(function(event) {
         console.log('onKeyUp event (debounced)', event);
-        // TODO auth
         updateStat(event.target.id, event.target.value)
         .then(response => {
+          // TODO handle errors
           console.log('Response from updating stat', response);
         });
       }, 500)
@@ -60,21 +60,13 @@ new Vue({
     onClickUpdate: function(event) {
       
       this.updating = true;
-
-      // NB. The scraping needs to be done server-side due to cross-origin restrictions client-side.
-      fetch('/api/admin/autoUpdate', {method: 'POST'})
-        .then(res => res.json())
-        .then(result => {
-
-          console.log('Result from server is', JSON.stringify(result));
-
-          this.updates = result;
-          this.updating = false;
-
-        })
-        .catch(err => {
-          console.error('Error attempting auto-update request', err);
-        });
+      
+      autoUpdate()
+      .then(response => {
+        console.log('Response from auto update', JSON.stringify(response));
+        this.updates = response;
+        this.updating = false;
+      });
 
     }
   }

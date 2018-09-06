@@ -25,7 +25,7 @@ db.init();
 const ADMIN_USER = 'admin';
 const app = express();
 
-app.set('trust proxy', 1);
+app.set('trust proxy', 1); // Trust the first proxy - required for our network
 app.use(cookieParser());
 app.use(session({
   secret: process.env.COOKIE_SECRET,
@@ -52,6 +52,7 @@ const adminAuth = (request, response, next) => {
 };
 
 const adminApiAuth = (request, response, next) => {
+  console.log('Checking request.session.user', request.session.user);
   if (request.session && request.session.user === ADMIN_USER ) {
     return next();
   } else {

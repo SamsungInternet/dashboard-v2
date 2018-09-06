@@ -33,10 +33,27 @@ function getComparisonGeneralStats() {
     });
 }
 
-function updateStat(statKey, statValue) {
-  // TODO auth!
-  return fetch('/api/updateStat', {
+// Scraping needs to be done server-side due to cross-origin restrictions client-side.
+function autoUpdate() {
+  return fetch('/api/admin/autoUpdate', {
     method: 'POST',
+    credentials: 'include'
+  })
+  .then(res => res.json())
+  .then(result => {
+    console.log('Result from server is', JSON.stringify(result));
+    return result;
+  })
+  .catch(err => {
+    console.error('Error attempting auto-update request', err);
+    return null;
+  });
+}
+
+function updateStat(statKey, statValue) {
+  return fetch('/api/admin/updateStat', {
+    method: 'POST',
+    credentials: 'include',
     headers: {
       'Accept': 'application/json',
       'Content-Type': 'application/json'         
@@ -45,7 +62,7 @@ function updateStat(statKey, statValue) {
   })
   .then(res => res.json())
   .then(data => {
-    console.log('Response after updating stat??', data);
+    console.log('Response after updating stat', data);
     return true;
   })
   .catch(err => {
