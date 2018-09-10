@@ -1,5 +1,6 @@
 import fetch from 'node-fetch';
 import htmlParser from 'fast-html-parser';
+import {JSDOM} from 'jsdom';
 
 export async function scrapeTwitterFollowerCount() {
  
@@ -48,4 +49,28 @@ export async function scrapeMediumFollowerCount() {
       console.error('Error scraping Medium follower count', err);
     });
   
+}
+
+export async function scrapeInstagramFollowerCount() {
+ 
+  return fetch('https://www.instagram.com/samsunginternet/')
+    .then(res => res.text())
+    .then(body => {
+    
+      // NB. Using JSDOM instead of fast-html-parser because the 
+      // latter was not useful for pulling out meta tag based on a
+      // property - its implementation of querySelector is v limited.
+      const doc = new JSDOM(body).window.document;
+      const descriptionElement = doc.querySelector('meta[name="description"]');
+      const descriptionText = descriptionElement.getAttribute('content');
+      const followersIndex = descriptionText.indexOf('Followers');
+      const followerCount = descriptionText.substring(0, followersIndex-1);
+    
+      return parseInt(followerCount, 10);
+    
+    })
+    .catch(err => {
+      console.error('Error scraping Instagram follower count', err);
+    });
+
 }

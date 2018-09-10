@@ -61,6 +61,14 @@
             <input type="number" v-on:keyup="onKeyUp" v-model.number="stats.twitterMentions.mostRecent.value" id="twitterMentions">
             <p>Twitter mentions (28 days) (<a href="https://analytics.twitter.com">find here</a>)</p>
           </div>
+          <div>
+            <input type="number" v-on:keyup="onKeyUp" v-model.number="stats.devHubUniqueVisitors.mostRecent.value" id="devHubUniqueVisitors">
+            <p>Dev Hub unique visitors (Last month - <strong>Temporary!</strong> We can automate when new Dev Hub analytics is live) (<a href="https://dash.cloudflare.com/07f6031276cb9cbf9dca84a1727cabbc/samsunginter.net/analytics">find here</a>)</p>
+          </div>
+          <div>
+            <input type="number" v-on:keyup="onKeyUp" v-model.number="stats.facebookFollowers.mostRecent.value" id="facebookFollowers">
+            <p>Facebook followers (<strong>Annoying!</strong> If someone wants to use their Facebook account it should be possible to get this from the API. I tried scraping but it doesn't seem possible - their HTML is obfuscated, AJAX-y junk) (<a href="https://facebook.com/samsunginternet">find here</a>)</p>
+          </div>
         </div>
       </div>
     </main>

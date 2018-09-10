@@ -10,7 +10,8 @@ import mustache from 'mustache';
 import * as db from './db.js';
 
 import {scrapeTwitterFollowerCount, 
-        scrapeMediumFollowerCount} from './scraper.js';
+        scrapeMediumFollowerCount,
+        scrapeInstagramFollowerCount} from './scraper.js';
 
 import {fetchStackOverflowQuestionStats, 
         fetchStackOverflowAnswerStats, 
@@ -37,13 +38,12 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(express.static('public'));
 
-app.use(function printSession(req, res, next) {
-  console.log('req.session', req.session);
-  return next();
-});
+// app.use(function printSession(req, res, next) {
+//   console.log('req.session', req.session);
+//   return next();
+// });
 
 const adminAuth = (request, response, next) => {
-  console.log('Checking request.session.user', request.session.user);
   if (request.session && request.session.user === ADMIN_USER ) {
     return next();
   } else {
@@ -52,7 +52,6 @@ const adminAuth = (request, response, next) => {
 };
 
 const adminApiAuth = (request, response, next) => {
-  console.log('Checking request.session.user', request.session.user);
   if (request.session && request.session.user === ADMIN_USER ) {
     return next();
   } else {
@@ -77,14 +76,9 @@ app.get('/login', (request, response) => {
 });
 
 app.post('/login', (request, response) => {
-  
-  console.log('username', request.body.username);
-  console.log('pwd', request.body.password);
-  
   if (request.body.username === ADMIN_USER &&
       request.body.password === process.env.ADMIN_PWD) {
     request.session.user = ADMIN_USER;
-    console.log('Set request.session.user', request.session.user);
     response.redirect('/admin');
   } else {
     response.redirect('/login?error=invalid');
@@ -113,9 +107,7 @@ app.get('/api/getAllStats', async function(request, response) {
 
 // JSON API endpoint to get most recent stats in the database
 app.get('/api/getMostRecentStats', async function(request, response) {
-  console.log('1');
   const rows = await db.getMostRecentStats();
-  console.log('2', rows);
   response.send(JSON.stringify(rows));
 });
 
@@ -158,10 +150,7 @@ app.post('/api/admin/updateStat', adminApiAuth, async function(request, response
     return;
   }
   
-  console.log('Update this stat', statKey, statValue);
-  
   const success = await db.updateStat(statKey, statValue);
-  
   response.send(JSON.stringify({success: success}));
 });
 
@@ -170,14 +159,16 @@ app.post('/api/admin/autoUpdate', adminApiAuth, async function(request, response
   
   let stats = {};
   
-  stats.twitterFollowerCount = await scrapeTwitterFollowerCount();
-  stats.mediumFollowerCount = await scrapeMediumFollowerCount();
+  stats.twitterFollowers = await scrapeTwitterFollowerCount();
+  stats.mediumFollowers = await scrapeMediumFollowerCount();
+  stats.instagramFollowers = await scrapeInstagramFollowerCount();
   
   for (const statKey in stats) {
   
     const statValue = stats[statKey];
     
     if (statValue !== null && !isNaN(statValue)) {
+      console.log('update stat', statKey, statValue);
       db.updateStat(statKey, statValue);
     } else {
       console.error(`Unparseable value for ${statKey}:`, statValue);
@@ -188,8 +179,6 @@ app.post('/api/admin/autoUpdate', adminApiAuth, async function(request, response
   const updatesMap = Object.keys(stats).map((key) => {
     return {key: key, value: stats[key]};
   });
-  
-  console.log('Updates map', updatesMap);
   
   response.send(updatesMap);
   
